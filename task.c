@@ -3,10 +3,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #define SIZE 100
-#define MAX 1000000
+#define MAX 10000000
 
 int start=0;//start*2 -first value of array
-int glob[SIZE]={};
+int glob[SIZE+1]={};
+// glob[SIZE]=0 -not ready for output =1-ready for output
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_write,cond_calc;
 void* f_write(void* arg)
@@ -19,15 +20,17 @@ void* f_write(void* arg)
     for(int k=0;k<MAX;k+=SIZE)
     {
       pthread_mutex_lock(&lock);
+      while(glob[SIZE]!=1)       pthread_cond_wait(&cond_write,&lock);
+
       for(int i=0;i<SIZE;i++)
       {
           fprintf(file,"%d\t",glob[i]);
 
       }
+      glob[SIZE]=0;
       fprintf(file, "\n" );
       printf("put in file 100 values\n");
       pthread_cond_signal(&cond_calc);
-      pthread_cond_wait(&cond_write,&lock);
       pthread_mutex_unlock(&lock);
       }
       printf("---------\n" );
@@ -47,6 +50,7 @@ void* calc_even(void* arg)
   for(int k=0;k<MAX;k+=SIZE)
   {
     pthread_mutex_lock(&lock);
+    while(glob[SIZE]!=0)     pthread_cond_wait(&cond_calc,&lock);
 
     for(int i=0;i<SIZE;i++)
     {
@@ -54,8 +58,8 @@ void* calc_even(void* arg)
       start++;
 
     }
+    glob[SIZE]=1;
     printf("array full of values\n");
-    pthread_cond_wait(&cond_calc,&lock);
     pthread_cond_signal(&cond_write);
     pthread_mutex_unlock(&lock);
 
@@ -63,12 +67,12 @@ void* calc_even(void* arg)
   pthread_exit(0);
 }
 
-void* calc_odd(void* arg)
-{
-  for(int i=0;i<SIZE;i++)
-    glob[i]=1+i*2;
-  return NULL;
-}
+// void* calc_odd(void* arg)
+// {
+//   for(int i=0;i<SIZE;i++)
+//     glob[i]=1+i*2;
+//   return NULL;
+// }
 int main()
 {
 
