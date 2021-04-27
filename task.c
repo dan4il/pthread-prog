@@ -30,7 +30,7 @@ void* f_write(void* arg)
       pthread_cond_wait(&cond_write,&lock);
       pthread_mutex_unlock(&lock);
       }
-      printf("---------\n" );
+      printf("-----------\n" );
 
   }
   else
