@@ -31,7 +31,7 @@ void* f_write(void* arg)
           fprintf(file,"%d\t",glob[i]);
 
       }
-      fprintf(file, "\n" );//to customize output
+      fprintf(file, "\n" ); //to customize output
       for(int i=SIZE;i<2*SIZE;i++)
       {
           fprintf(file,"%d\t",glob[i]);
